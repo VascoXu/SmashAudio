@@ -141,11 +141,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Create a Blob providing as first argument a typed array with the file buffer
                 var blob = new window.Blob([new Uint8Array(event.target.result)]);
 
-                // Load the blob into Wavesurfer
-                wavesurfer.loadBlob(blob);
-
                 // Reset first
                 first = true;
+
+                // Load the blob into Wavesurfer
+                wavesurfer.loadBlob(blob);
             };
 
             reader.onerror = function (evt) {
