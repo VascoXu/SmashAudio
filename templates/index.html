@@ -43,7 +43,7 @@
 
             <!-- Drag-and-Drop file -->
             <!-- <div id="drop_zone">
-                <p>Drop a file</p>
+                <p><b>Choose a file</b> or drag it here.</p>
             </div> -->
 
             <!-- Download link -->
@@ -51,11 +51,16 @@
 
             <div>
                 <!-- Loading -->
-                <div id="loading" class="float-left">
+                <div id="loading" class="float-left mr-3">
                     <div class="spinner-border spinner-border-sm" role="status">
                         <span class="sr-only">Loading...</span>
                     </div>
                     <span>Loading...</span>
+                </div>
+
+                <!-- Choose File -->
+                <div class="form-group float-left">
+                    <input type="file" class="form-control-file" id="choose-file">
                 </div>
 
                 <!-- Zoom and Download Button -->
@@ -79,14 +84,9 @@
                 <div id="waveform"></div>                
             </div>
 
-            <!-- File Select -->
-            <!-- <div class="custom-file mt-3">
-                <input type="file" class="custom-file-input" id="customFile">
-                <label class="custom-file-label" for="customFile">Choose file</label>
-            </div> -->
-
             <!-- Buttons -->
             <div class="btn-toolbar mt-4 justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                <!-- Play, Pause Buttons -->
                 <div class="btn-group" role="group" aria-label="Basic example">
                     <button id="play" type="button" class="btn btn-dark"><i class="fa fa-play" aria-hidden="true"></i><span class="ml-2">Play</span></button>
                     <button id="pause" type="button" class="btn btn-dark"><i class="fa fa-pause" aria-hidden="true"></i><span class="ml-2">Pause</span></button>
@@ -94,6 +94,7 @@
                     <button id="fast-forward" type="button" class="btn btn-dark"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
                 </div>
 
+                <!-- Time -->
                 <div class="btn-group" role="group" aria-label="Basic example">
                     <div class="text-center">
                         <h5 id="current-time">00:00:00</h5>

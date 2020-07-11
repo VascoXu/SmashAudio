@@ -49,7 +49,17 @@
     border-radius: .25rem;
 }
 
+#loading
+{
+    display: none;
+}
+
 #download-link
 {
     display: none;
+}
+
+.choose-file
+{
+    margin: 0;
 }
