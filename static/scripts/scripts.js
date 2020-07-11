@@ -143,6 +143,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 // Load the blob into Wavesurfer
                 wavesurfer.loadBlob(blob);
+
+                // Reset first
+                first = true;
             };
 
             reader.onerror = function (evt) {
@@ -164,7 +167,8 @@ document.addEventListener("DOMContentLoaded", function() {
             // Get current zoom level
             zoomLevel = getZoomLevel();
             
-            // Save firs
+            // Save first history
+            history = [];
             history.push(wavesurfer.backend.buffer);
             first = !first;
         }
