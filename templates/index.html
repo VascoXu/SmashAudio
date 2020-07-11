@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta -->
+        <meta charset="utf-8"/>
+        <meta content="initial-scale=1, width=device-width" name="viewport"/>
+
+        <title>SmashAudio</title>
+
+        <!-- http://jquery.com/ -->
+        <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
+        <!-- http://getbootstrap.com/ -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+        <!-- Font Awesome -->
+        <script src="https://use.fontawesome.com/fd3de6a15d.js"></script>
+
+        <!-- App's own CSS -->
+        <link href="static/styles/styles.css" rel="stylesheet"/>
+
+        <!-- app's own JavaScript -->
+        <script src="static/scripts/scripts.js"></script>
+
+        <!-- app's favicon -->
+        <link href="static/imgs/favicon.ico" rel="icon">
+    </head>
+    <body>
+
+        <div class="container">
+            
+            <!-- Header -->
+            <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <img class="mb-4 img-fluid" src="static/imgs/SmashLogo.png" alt="" width="72px" height="72px"> 
+                        <h2 class="ml-3 display-4 text-dark">SmashAudio</h2>
+                    </div>
+                </div>
+                <!-- <p class="lead"></p> -->
+            </div>
+
+            <!-- Drag-and-Drop file -->
+            <!-- <div id="drop_zone">
+                <p>Drop a file</p>
+            </div> -->
+
+            <!-- Download link -->
+            <a id="download-link"></a>
+
+            <div>
+                <!-- Loading -->
+                <div id="loading" class="float-left">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <span>Loading...</span>
+                </div>
+
+                <!-- Zoom and Download Button -->
+                <div class="text-right mb-3">
+                    <div class="btn-group mr-5" role="group" aria-label="Basic example">
+                        <button id="replace" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-exchange" aria-hidden="true"></i><span class="ml-2">Replace</span></button>
+                        <button id="revert" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-history" aria-hidden="true"></i><span class="ml-2">Revert</span></button>
+                    </div>
+            
+                    <div class="btn-group " role="group" aria-label="Basic example">
+                        <button id="zoom-in" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
+                        <button id="zoom-out" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-search-minus" aria-hidden="true"></i></button>
+                        <button id="download" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-download" aria-hidden="true"></i><span class="ml-2">Download</span></button>                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waveform -->
+            <div class="waveform-container">
+                <div id="wave-timeline"></div>
+                <div id="waveform"></div>                
+            </div>
+
+            <!-- File Select -->
+            <!-- <div class="custom-file mt-3">
+                <input type="file" class="custom-file-input" id="customFile">
+                <label class="custom-file-label" for="customFile">Choose file</label>
+            </div> -->
+
+            <!-- Buttons -->
+            <div class="btn-toolbar mt-4 justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button id="play" type="button" class="btn btn-dark"><i class="fa fa-play" aria-hidden="true"></i><span class="ml-2">Play</span></button>
+                    <button id="pause" type="button" class="btn btn-dark"><i class="fa fa-pause" aria-hidden="true"></i><span class="ml-2">Pause</span></button>
+                    <button id="fast-backward" type="button" class="btn btn-dark"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
+                    <button id="fast-forward" type="button" class="btn btn-dark"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
+                </div>
+
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="text-center">
+                        <h5 id="current-time">00:00:00</h5>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Wavesurfer.js -->
+        <script src="static/lib/wavesurfer.js"></script>
+        <script src="static/lib/wavesurfer.regions.min.js"></script>
+        <script src="static/lib/wavesurfer.cursor.min.js"></script>
+        <script src="static/lib/wavesurfer.timeline.min.js"></script>
+    </body>
+</html>
