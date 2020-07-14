@@ -67,7 +67,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Action listener for play button
     document.getElementById("play").addEventListener("click", function(){
-        wavesurfer.playPause();
+        var regions = wavesurfer.regions.list;
+        var keys = Object.keys(regions);
+        if (keys.length >= 1) {
+            var start = regions[keys[0]].start;
+            var end = regions[keys[0]].end;
+            wavesurfer.play(start, end);  
+        }
+        else {
+            wavesurfer.playPause();
+        }
     });
 
     // Action listener for pause button
