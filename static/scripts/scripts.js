@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (keys.length > 0) {
             var start = regions[keys[0]].start;
             var end = regions[keys[0]].end;
-    
+            
             var part1 = slice(wavesurfer.backend.buffer, 0, start); 
             var middle = createDeleteAudio(start, end);
             var part2 = slice(wavesurfer.backend.buffer, end, wavesurfer.getDuration());
@@ -79,6 +79,16 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // Action listener for playing 1x speed
+    document.getElementById("play-1x").addEventListener("click", function(){
+        wavesurfer.setPlaybackRate(1);
+    });
+
+    // Action listener for playing 2x speed
+    document.getElementById("play-2x").addEventListener("click", function(){
+        wavesurfer.setPlaybackRate(1.5);
+    });
+ 
     // Action listener for pause button
     document.getElementById("pause").addEventListener("click", function(){
         wavesurfer.pause();
@@ -139,11 +149,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Handle choose file and loading thereof
     document.getElementById("choose-file").addEventListener('change', function(e) {
+        // Merge audio files
+        if (this.files.length > 0) {
+            // Display loading until loaded
+            $('#loading').show();
+            mergeAudio(this.files).then(result => {    
+                // Reset first
+                first = true;
+    
+                // Load the AudioBuffer into Wavesurfer
+                wavesurfer.loadDecodedBuffer(result);
+            })
+        }
+
+        /*
         var file = this.files[0];
 
-        $('#loading').show();
-
         if (file) {
+            // Display loading until loaded
+            $('#loading').show();
+
             var reader = new FileReader();
             
             reader.onload = function (event) {
@@ -162,8 +187,9 @@ document.addEventListener("DOMContentLoaded", function() {
             };
 
             // Read File as an ArrayBuffer
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(audio);
         }
+        */
     }, false);
 
     // Runs when Wavesurfer.js is ready
@@ -182,11 +208,15 @@ document.addEventListener("DOMContentLoaded", function() {
             first = !first;
         }
 
-        fetch('static/media//delete.mp3')
+        // Determine source of delete audio
+        var numChannels = wavesurfer.backend.buffer.numberOfChannels;
+        var deleteSrc = `static/media/delete${numChannels}.wav`;
+
+        fetch(deleteSrc)
         .then(response => response.arrayBuffer())
         .then(data => {
           wavesurfer.backend.ac.decodeAudioData(data).then(decodedData => {
-            deleteAudio = decodedData;  
+            deleteAudio = decodedData;
           });
         });
     });
@@ -267,11 +297,33 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     */
 
+     var mergeAudio = async function(files) {
+        var master = undefined;
+        for (let i = 0; i < files.length; i++) {
+            file = files[i];
+
+            // Create audio buffer from file
+            const arrayBuffer = await file.arrayBuffer();
+            const audioContext = new AudioContext();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            // Concatenate to previous audio buffer
+            if (master) {
+                master = concatenateAudioBuffers(master, audioBuffer);
+            }
+            else {
+                master = audioBuffer;
+            }
+        }
+        return master;
+    }
+
     // Create delete sound
     function createDeleteAudio(start, end) {
         var length = (end - start);
-        var deleteSoundclip= deleteAudio;
-        for (var i = 0; i < Math.ceil(length); i++) {
+        var splices = length / 0.78;
+        var deleteSoundclip = deleteAudio;
+        for (var i = 0; i < Math.ceil(splices); i++) {
             deleteSoundclip = concatenateAudioBuffers(deleteSoundclip, deleteAudio);
         }
         deleteSoundclip = slice(deleteSoundclip, 0, length);
@@ -314,6 +366,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (buffer1.numberOfChannels != buffer2.numberOfChannels) {
+            console.log(buffer1.numberOfChannels);
+            console.log(buffer2.numberOfChannels);
             console.log("number of channels is not the same!");
             return null;
         }
@@ -333,7 +387,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return tmp;
     }
 
-        // Convert an AudioBuffer to a Blob using WAVE representation
+    // Convert an AudioBuffer to a Blob using WAVE representation
     // https://www.russellgood.com/how-to-convert-audiobuffer-to-audio-file/
     function bufferToWave(abuffer, len) {
         var numOfChan = abuffer.numberOfChannels,

@@ -60,11 +60,20 @@
 
                 <!-- Choose File -->
                 <div class="form-group float-left">
-                    <input type="file" class="form-control-file" id="choose-file">
+                    <input type="file" class="form-control-file" id="choose-file" multiple>
                 </div>
 
                 <!-- Zoom and Download Button -->
                 <div class="text-right mb-3">
+                    <div class="btn-group btn-group-toggle mr-4" data-toggle="buttons">
+                        <label class="btn btn-light btn-smashlight active px-3">
+                          <input type="radio" name="options" id="play-1x" autocomplete="off" checked> 1x
+                        </label>
+                        <label class="btn btn-light btn-smashlight px-3">
+                          <input type="radio" name="options" id="play-2x" autocomplete="off"> 2x
+                        </label>
+                    </div>
+
                     <div class="btn-group mr-5" role="group" aria-label="Basic example">
                         <button id="replace" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-exchange" aria-hidden="true"></i><span class="ml-2">Replace</span></button>
                         <button id="revert" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-history" aria-hidden="true"></i><span class="ml-2">Revert</span></button>
