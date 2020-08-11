@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
             concat  = concatenateAudioBuffers(concat, part2);
             
             history.push(concat);
-            wavesurfer.loadDecodedBuffer(buffer);
+            wavesurfer.loadDecodedBuffer(concat);
         }
     });
 
