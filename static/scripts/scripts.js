@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var first = true;
     var zoomLevel = 0;
     var history = [];
+    var edits = [];
 
     // Create waveform with Wavesurfer.js
     var wavesurfer = WaveSurfer.create({
@@ -43,6 +44,8 @@ document.addEventListener("DOMContentLoaded", function() {
             var start = regions[keys[0]].start;
             var end = regions[keys[0]].end;
             
+            edits.push([start, end]);
+
             var part1 = slice(wavesurfer.backend.buffer, 0, start); 
             var middle = createDeleteAudio(start, end);
             var part2 = slice(wavesurfer.backend.buffer, end, wavesurfer.getDuration());
@@ -51,9 +54,27 @@ document.addEventListener("DOMContentLoaded", function() {
             concat  = concatenateAudioBuffers(concat, part2);
             
             history.push(concat);
+            wavesurfer.loadDecodedBuffer(buffer);
+        }
+    });
 
-            wavesurfer.loadDecodedBuffer(concat)
-        };
+    // Replace entire audio with saved edits
+    document.getElementById("prev-replace").addEventListener("click", function(){
+        var buffer = wavesurfer.backend.buffer;
+        for (let i = 0; i < edits.length; i++) {
+            var edit = edits[i];
+            var start = edit[0];
+            var end = edit[1];
+
+            var part1 = slice(buffer, 0, start); 
+            var middle = createDeleteAudio(start, end);
+            var part2 = slice(buffer, end, wavesurfer.getDuration());
+            
+            buffer = concatenateAudioBuffers(part1, middle);
+            buffer = concatenateAudioBuffers(buffer, part2);
+        }
+        history.push(buffer);
+        wavesurfer.loadDecodedBuffer(buffer);
     });
 
     // Revert changes
@@ -86,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Action listener for playing 2x speed
     document.getElementById("play-2x").addEventListener("click", function(){
-        wavesurfer.setPlaybackRate(1.5);
+        wavesurfer.setPlaybackRate(1.35);
     });
  
     // Action listener for pause button
@@ -145,6 +166,24 @@ document.addEventListener("DOMContentLoaded", function() {
                 download_link.remove();                
               }
         }
+
+        /*
+        // Create log file
+        fetch('/api/replace', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                edits: edits
+            }),
+        })
+        .then(response => response.json())
+        .then(result => {
+            // Print result
+            console.log(result);
+        });
+        */
     });
 
     // Handle choose file and loading thereof
@@ -192,6 +231,11 @@ document.addEventListener("DOMContentLoaded", function() {
         */
     }, false);
 
+    // Allow selection of the same file
+    document.getElementById("choose-file").addEventListener("click", function() {
+        this.value = null;
+    });
+
     // Runs when Wavesurfer.js is ready
     wavesurfer.on('ready', function() {
         // Hide loading bar
@@ -199,6 +243,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Insert buffer into history
         if (first) {
+            /*
+            // If previous edit is available
+            if (edits.length > 0) {
+                // Then, ask user if they want to apply the edits
+            }
+            */
+
             // Get current zoom level
             zoomLevel = getZoomLevel();
             

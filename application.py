@@ -28,3 +28,18 @@ def index():
     """Show main page"""
     return render_template("index.html")
 
+
+@app.route('/api/replace',  methods=["POST"])
+def replace():
+    """Log replacement edits"""
+    
+    data = request.get_json()
+    edits = data["edits"]
+
+    with open("edit.txt", "w") as f:
+        for edit in edits:
+            print(edit)
+            editline = f'{edit[0]}, {edit[0]}\n'
+            f.write(editline)
+
+    return jsonify({'res': "Success!"})
