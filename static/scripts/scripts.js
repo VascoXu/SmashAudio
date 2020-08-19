@@ -59,8 +59,21 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Replace entire audio with saved edits
-    document.getElementById("prev-replace").addEventListener("click", function(){
+    document.getElementById("cutreplace").addEventListener("click", function(){
         var buffer = wavesurfer.backend.buffer;
+        var regions = wavesurfer.regions.list;
+        var keys = Object.keys(regions);
+
+        if (keys.length > 0) {
+            var start = regions[keys[0]].start;
+            var end = regions[keys[0]].end;
+            //Cut
+            var part1 = slice(buffer, 0, start);
+            var part2 = slice(buffer, end, wavesurfer.getDuration());
+            buffer = concatenateAudioBuffers(part1, part2);
+        }
+
+        // Replace
         for (let i = 0; i < edits.length; i++) {
             var edit = edits[i];
             var start = edit[0];
