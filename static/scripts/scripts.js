@@ -67,10 +67,19 @@ document.addEventListener("DOMContentLoaded", function() {
         if (keys.length > 0) {
             var start = regions[keys[0]].start;
             var end = regions[keys[0]].end;
+            
+            // Handle negative numbers
+            if (start < 0) start = 0;
+
             //Cut
-            var part1 = slice(buffer, 0, start);
-            var part2 = slice(buffer, end, wavesurfer.getDuration());
-            buffer = concatenateAudioBuffers(part1, part2);
+            if (start == 0) {
+                buffer = slice(buffer, end, wavesurfer.getDuration());
+            }
+            else {
+                var part1 = slice(buffer, 0, start);
+                var part2 = slice(buffer, end, wavesurfer.getDuration());
+                buffer = concatenateAudioBuffers(part1, part2);
+            }
         }
 
         // Replace
