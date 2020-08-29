@@ -210,11 +210,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Handle choose file and loading thereof
     document.getElementById("choose-file").addEventListener('change', function(e) {
+        var files = [...this.files].sort();
+
         // Merge audio files
-        if (this.files.length > 0) {
+        if (files.length > 0) {
             // Display loading until loaded
             $('#loading').show();
-            mergeAudio(this.files).then(result => {    
+            mergeAudio(files).then(result => {    
                 // Reset first
                 first = true;
     
