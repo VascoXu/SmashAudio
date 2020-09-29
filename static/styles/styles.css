@@ -22,6 +22,11 @@
     position: relative;
 }
 
+#waveform2
+{
+    position: relative;
+}
+
 .waveform-container
 {
     border: 1px solid gray;
@@ -62,4 +67,11 @@
 .choose-file
 {
     margin: 0;
+}
+
+.selected 
+{
+    outline: none;
+    border-color: #9ecaed;
+    box-shadow: 0 0 10px #9ecaed;
 }

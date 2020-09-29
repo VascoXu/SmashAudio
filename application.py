@@ -1,8 +1,15 @@
 import os
 
+
 from flask import Flask, flash, jsonify, request, redirect, session, render_template, url_for, send_file
 from flask_session import Session
+from alignment import align
 from tempfile import mkdtemp
+import librosa
+import numpy as np
+import webbrowser
+from threading import Timer
+import datetime
 
 # Configure application
 app = Flask(__name__)
@@ -29,6 +36,22 @@ def index():
     return render_template("index.html")
 
 
+@app.route('/api/peaks', methods=["POST", "GET"])
+def peaks():
+    """Find peaks in audio file"""
+
+    # Retrieve audio file
+    audio1 = request.files["audio1"]
+    audio2 = request.files["audio2"]
+    audio1.save("temp1.wav")
+    audio2.save("temp2.m4a")
+
+    # Find sync point
+    sync_point = align("temp1.wav", "temp2.m4a")
+
+    return jsonify({'time': sync_point[0]})
+
+
 @app.route('/api/replace',  methods=["POST"])
 def replace():
     """Log replacement edits"""
@@ -43,3 +66,13 @@ def replace():
             f.write(editline)
 
     return jsonify({'res': "Success!"})
+
+
+def open_browser():
+    """Open web aplication automatically"""
+    webbrowser.open_new('http://127.0.0.1:3000/')
+    
+
+if __name__ == "__main__":
+      Timer(1, open_browser).start()
+      app.run(host="0.0.0.0", port=3000)

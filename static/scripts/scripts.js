@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    var deleteAudio = undefined;
+    var deleteAudios = [];
     var first = true;
+    var first2 = true;
     var zoomLevel = 0;
+    var fileSelection = 0;
     var history = [];
     var edits = [];
+    var wavesurfers = [];
+    var size = 0;
+    var selected = 0;
 
     // Create waveform with Wavesurfer.js
     var wavesurfer = WaveSurfer.create({
@@ -35,224 +40,283 @@ document.addEventListener("DOMContentLoaded", function() {
         ]
     });
 
+    // Create waveform with Wavesurfer.js
+    var wavesurfer2 = WaveSurfer.create({
+        container: document.querySelector('#waveform2'),
+        backend: 'WebAudio',
+        showTime: true,
+        scrollParent: true, 
+        customShowTimeStyle: {
+            'background-color': '#000',
+            color: '#fff',
+            padding: '2px',
+            'font-size': '10px'
+        },
+        plugins: [
+            WaveSurfer.cursor.create({
+                opacity: 1, 
+            }),
+            WaveSurfer.regions.create({
+                dragSelection: {
+                    drag: false,
+                    slop: 1,
+                    loop : false,   
+                }
+            }),
+            WaveSurfer.timeline.create({
+                container: '#wave-timeline2',
+            })
+        ]
+    });
+
+    // Wavesurfer1 is selected
+    wavesurfer.on('interaction', function() {
+        selected = 0;
+        highlightWS1();
+    });
+
+    // Wavesurfer2 is selected
+    wavesurfer2.on('interaction', function() {
+        selected = 1;
+        highlightWS2();
+    });
+
+    // Insert wavesurfer to an array for later use
+    wavesurfers.push(wavesurfer);
+    wavesurfers.push(wavesurfer2);
+
     // Replace selected region with "delete"
-    document.getElementById("replace").addEventListener("click", function(){
-        var regions = wavesurfer.regions.list;
+    document.getElementById("replace").addEventListener("click", function() {
+        var regions = wavesurfers[selected].regions.list;
         var keys = Object.keys(regions);
 
         if (keys.length > 0) {
             var start = regions[keys[0]].start;
             var end = regions[keys[0]].end;
             
-            edits.push([start, end]);
+            if (selected == 0) edits.push([start, end]);
 
-            var part1 = slice(wavesurfer.backend.buffer, 0, start); 
-            var middle = createDeleteAudio(start, end);
-            var part2 = slice(wavesurfer.backend.buffer, end, wavesurfer.getDuration());
+            var part1 = slice(wavesurfers[selected].backend.buffer, 0, start); 
+            var middle = createDeleteAudio(start, end, selected);
+            var part2 = slice(wavesurfers[selected].backend.buffer, end, wavesurfers[selected].getDuration());
             
             var concat = concatenateAudioBuffers(part1, middle);
             concat  = concatenateAudioBuffers(concat, part2);
             
-            history.push(concat);
-            wavesurfer.loadDecodedBuffer(concat);
+            history[selected].push([concat]);
+
+            wavesurfers[selected].loadDecodedBuffer(concat);
         }
     });
 
     // Replace entire audio with saved edits
-    document.getElementById("cutreplace").addEventListener("click", function(){
-        var buffer = wavesurfer.backend.buffer;
-        var regions = wavesurfer.regions.list;
-        var keys = Object.keys(regions);
-
-        if (keys.length > 0) {
-            var start = regions[keys[0]].start;
-            var end = regions[keys[0]].end;
-            
-            // Handle negative numbers
-            if (start < 0) start = 0;
-
-            //Cut
-            if (start == 0) {
-                buffer = slice(buffer, end, wavesurfer.getDuration());
-            }
-            else {
-                var part1 = slice(buffer, 0, start);
-                var part2 = slice(buffer, end, wavesurfer.getDuration());
-                buffer = concatenateAudioBuffers(part1, part2);
-            }
-        }
-
+    document.getElementById("prev").addEventListener("click", function() {
         // Replace
+        var buffer = wavesurfer2.backend.buffer;
         for (let i = 0; i < edits.length; i++) {
             var edit = edits[i];
             var start = edit[0];
             var end = edit[1];
 
             var part1 = slice(buffer, 0, start); 
-            var middle = createDeleteAudio(start, end);
-            var part2 = slice(buffer, end, wavesurfer.getDuration());
+            var middle = createDeleteAudio(start, end, 1);
+            var part2 = slice(buffer, end, wavesurfer2.getDuration());
             
             buffer = concatenateAudioBuffers(part1, middle);
             buffer = concatenateAudioBuffers(buffer, part2);
         }
-        history.push(buffer);
-        wavesurfer.loadDecodedBuffer(buffer);
+        history[1].push(buffer);
+        wavesurfer2.loadDecodedBuffer(buffer);
+    });
+
+    // Cut the track
+    document.getElementById("cut").addEventListener("click", function() {
+
+        // Package the data
+        /* 
+        const blob1 = bufferToWave(wavesurfer.backend.buffer, wavesurfer.backend.buffer.length);
+        const blob2 = bufferToWave(wavesurfer2.backend.buffer, wavesurfer2.backend.buffer.length);
+        var fd = new FormData();
+        fd.append("audio1", blob1);
+        fd.append("audio2", blob2);
+
+        // Send audio blob to server
+        $('#loading').show();
+        fetch('/api/peaks', {
+            method: 'POST',
+            body: fd,
+        })
+        .then(response => response.json())
+        .then(result => {
+            $('#loading').hide();
+
+            // Retrieve sync point
+            var sync_point = result["time"]; 
+            
+            // Slice buffer according to sync point
+            var buffer = wavesurfer2.backend.buffer;
+            var duration = wavesurfer2.backend.buffer.duration;
+            buffer = slice(buffer, sync_point, duration);
+            
+            // Load sliced buffer to wavesurfer
+            history.push(buffer);
+            wavesurfer2.loadDecodedBuffer(buffer);         
+        });
+        */
+
+       var buffer = wavesurfers[selected].backend.buffer;
+       var regions = wavesurfers[selected].regions.list;
+       var keys = Object.keys(regions);
+
+       if (keys.length > 0) {
+           var start = regions[keys[0]].start;
+           var end = regions[keys[0]].end;
+           
+           // Handle negative numbers
+           if (start < 0) start = 0;
+
+           //Cut
+           if (start == 0) {
+               buffer = slice(buffer, end, wavesurfers[selected].getDuration());
+           }
+           else {
+               var part1 = slice(buffer, 0, start);
+               var part2 = slice(buffer, end, wavesurfers[selected].getDuration());
+               buffer = concatenateAudioBuffers(part1, part2);
+           }
+       }
+       history[selected].push(buffer);
+       wavesurfers[selected].loadDecodedBuffer(buffer);
     });
 
     // Revert changes
-    document.getElementById("revert").addEventListener("click", function(){
-        history.pop();
-        var prev = history[history.length - 1];
-        if (prev) {
-            wavesurfer.loadDecodedBuffer(prev);
+    document.getElementById("revert").addEventListener("click", function() {
+        if (history[selected].length > 1) {
+            var revert = history[selected].pop();
+            var prev = history[selected][history[selected].length - 1];
+            // Check if reverted change is a replace action 
+            if (Array.isArray(revert) && selected == 0) {
+                // Update the edits array accordingdly 
+                edits.pop();
+            }
+            if (Array.isArray(prev)) prev = prev[0];
+            if (prev) wavesurfers[selected].loadDecodedBuffer(prev);
         }
     }); 
 
     // Action listener for play button
-    document.getElementById("play").addEventListener("click", function(){
-        var regions = wavesurfer.regions.list;
+    document.getElementById("play").addEventListener("click", function() {
+        var regions = wavesurfers[selected].regions.list;
         var keys = Object.keys(regions);
         if (keys.length >= 1) {
             var start = regions[keys[0]].start;
             var end = regions[keys[0]].end;
-            wavesurfer.play(start, end);  
+            wavesurfers[selected].play(start, end);  
         }
         else {
-            wavesurfer.playPause();
+            wavesurfers[selected].playPause();
         }
     });
 
     // Action listener for playing 1x speed
-    document.getElementById("play-1x").addEventListener("click", function(){
-        wavesurfer.setPlaybackRate(1);
+    document.getElementById("play-1x").addEventListener("click", function() {
+        wavesurfers[selected].setPlaybackRate(1);
     });
 
-    // Action listener for playing 2x speed
-    document.getElementById("play-2x").addEventListener("click", function(){
-        wavesurfer.setPlaybackRate(1.35);
+    // Action listener for playing 2x speed 
+    document.getElementById("play-2x").addEventListener("click", function() {
+        wavesurfers[selected].setPlaybackRate(1.35);
     });
- 
+    
     // Action listener for pause button
-    document.getElementById("pause").addEventListener("click", function(){
-        wavesurfer.pause();
+    document.getElementById("pause").addEventListener("click", function() {
+        wavesurfers[selected].playPause();
     });
 
     // Action listener for pause button
-    document.getElementById("fast-backward").addEventListener("click", function(){
-        var currentTime = wavesurfer.getCurrentTime();
+    document.getElementById("fast-backward").addEventListener("click", function() {
+        var currentTime = wavesurfers[selected].getCurrentTime();
         if (currentTime - 5 > 0) {
-            wavesurfer.setCurrentTime(currentTime - 5);
+            wavesurfers[selected].setCurrentTime(currentTime - 5);
         }
     });
         
     // Action listener for pause button
     document.getElementById("fast-forward").addEventListener("click", function(){
-        var currentTime = wavesurfer.getCurrentTime();
-        var duration = wavesurfer.getDuration();
+        var currentTime = wavesurfers[selected].getCurrentTime();
+        var duration = wavesurfers[selected].getDuration();
         
         if (currentTime + 5 < duration) {
-            wavesurfer.setCurrentTime(currentTime + 5);
+            wavesurfers[selected].setCurrentTime(currentTime + 5);
         }
     });
 
     // Action listener for zoom-in
     document.getElementById("zoom-in").addEventListener("click", function() {
-        if (wavesurfer.backend.buffer && zoomLevel < 100) {
+        if (wavesurfers[selected].backend.buffer && zoomLevel < 100) {
             zoomLevel += 1;
-            wavesurfer.zoom(zoomLevel);
+            wavesurfers[selected].zoom(zoomLevel);
         }
     });
 
     // Action listener for zoom-out
     document.getElementById("zoom-out").addEventListener("click", function() {
-        if (wavesurfer.backend.buffer && zoomLevel > 0) {
+        if (wavesurfers[selected].backend.buffer && zoomLevel > 0) {
             zoomLevel -= 1;
-            wavesurfer.zoom(zoomLevel);
+            wavesurfers[selected].zoom(zoomLevel);
         }
     });
 
     // Action listener for download button
-    document.getElementById("download").addEventListener("click", function(){
-        if (wavesurfer.backend.buffer) {
-            var buffer = wavesurfer.backend.buffer;
-            var length = wavesurfer.backend.buffer.length;
-            
-            var filename = prompt("Please enter a filename: "); 
-            if (filename == null || filename == "") {
-                alert("Invalid filename!");
-              } else {
-                var download_link = document.getElementById("download-link");
-                download_link.href = URL.createObjectURL(bufferToWave(buffer, length));
-                download_link.download = filename;
-                download_link.click();
-                download_link.remove();                
-              }
+    document.getElementById("download").addEventListener("click", function() {
+        for (let i = 0; i < size; i++) {
+            if (wavesurfers[i].backend.buffer) {
+                var buffer = wavesurfers[i].backend.buffer;
+                var length = wavesurfers[i].backend.buffer.length;
+                
+                var filename = prompt("Please enter a filename for first audio: "); 
+                if (filename == null || filename == "") {
+                    alert("Invalid filename!");
+                  } else {
+                    var download_link = document.getElementById("download-link");
+                    download_link.href = URL.createObjectURL(bufferToWave(buffer, length));
+                    download_link.download = `${filename}.wav`;
+                    download_link.click();
+                    if (i == 1) download_link.remove();
+                  }
+            }
         }
-
-        /*
-        // Create log file
-        fetch('/api/replace', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                edits: edits
-            }),
-        })
-        .then(response => response.json())
-        .then(result => {
-            // Print result
-            console.log(result);
-        });
-        */
     });
 
     // Handle choose file and loading thereof
     document.getElementById("choose-file").addEventListener('change', function(e) {
         var files = [...this.files].sort();
-
+    
         // Merge audio files
         if (files.length > 0) {
             // Display loading until loaded
             $('#loading').show();
             mergeAudio(files).then(result => {    
                 // Reset first
-                first = true;
-    
-                // Load the AudioBuffer into Wavesurfer
-                wavesurfer.loadDecodedBuffer(result);
+                if (!first2) {
+                    first = true;
+                    first2 = true;
+                }
+                
+                if (fileSelection == 0) {
+                    // Load the AudioBuffer into Wavesurfer
+                    wavesurfer.loadDecodedBuffer(result);
+                }
+                else {
+                    // Load the AudioBuffer into Wavesurfer
+                    wavesurfer2.loadDecodedBuffer(result);
+                }
+                
+                // Increment file number
+                fileSelection += 1;
+                fileSelection %= 2;
             })
         }
-
-        /*
-        var file = this.files[0];
-
-        if (file) {
-            // Display loading until loaded
-            $('#loading').show();
-
-            var reader = new FileReader();
-            
-            reader.onload = function (event) {
-                // Create a Blob providing as first argument a typed array with the file buffer
-                var blob = new window.Blob([new Uint8Array(event.target.result)]);
-
-                // Reset first
-                first = true;
-
-                // Load the blob into Wavesurfer
-                wavesurfer.loadBlob(blob);
-            };
-
-            reader.onerror = function (evt) {
-                console.error("An error ocurred reading the file: ", evt);
-            };
-
-            // Read File as an ArrayBuffer
-            reader.readAsArrayBuffer(audio);
-        }
-        */
     }, false);
 
     // Allow selection of the same file
@@ -267,20 +331,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Insert buffer into history
         if (first) {
-            /*
-            // If previous edit is available
-            if (edits.length > 0) {
-                // Then, ask user if they want to apply the edits
-            }
-            */
-
             // Get current zoom level
             zoomLevel = getZoomLevel();
             
             // Save first history
             history = [];
-            history.push(wavesurfer.backend.buffer);
+            history.push([])
+            history[0].push(wavesurfer.backend.buffer);
             first = !first;
+
+            size+=1;
+            size%=3;
         }
 
         // Determine source of delete audio
@@ -290,9 +351,42 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch(deleteSrc)
         .then(response => response.arrayBuffer())
         .then(data => {
-          wavesurfer.backend.ac.decodeAudioData(data).then(decodedData => {
-            deleteAudio = decodedData;
-          });
+            wavesurfer.backend.ac.decodeAudioData(data).then(decodedData => {
+                deleteAudios[0] = decodedData;
+            });
+        });
+
+    });
+
+    // Runs when Wavesurfer.js is ready
+    wavesurfer2.on('ready', function() {
+        // Hide loading bar
+        $('#loading').hide();
+
+        // Insert buffer into history
+        if (first2) {
+            // Get current zoom level
+            zoomLevel = getZoomLevel();
+
+            // Save first history
+            history.push([]);
+            history[1].push(wavesurfers[1].backend.buffer);
+            first2 = !first2;
+
+            size+=1;
+            size%=3;
+        }
+
+        // Determine source of delete audio
+        var numChannels = wavesurfer2.backend.buffer.numberOfChannels;
+        var deleteSrc = `static/media/delete${numChannels}.wav`;
+
+        fetch(deleteSrc)
+        .then(response => response.arrayBuffer())
+        .then(data => {
+            wavesurfer2.backend.ac.decodeAudioData(data).then(decodedData => {
+                deleteAudios[1] = decodedData;
+            });
         });
     });
 
@@ -306,8 +400,31 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // Runs when audio is playing (used to display time)
+    wavesurfer2.on("audioprocess", function() {
+        if(wavesurfer2.isPlaying()) {
+            // Display current time 
+            var seconds = wavesurfer2.getCurrentTime();
+            var formattedTime = secondsToTimestamp(seconds);
+            document.getElementById("current-time").innerText = formattedTime;
+        }
+    });
+
     // Runs when region is updated (only allow one region)
-    wavesurfer.on('region-updated', function(region){
+    wavesurfer.on('region-updated', function(region) {
+        selected = 0;
+        highlightWS1();
+        var regions = region.wavesurfer.regions.list;
+        var keys = Object.keys(regions);
+        if (keys.length > 1) {
+            regions[keys[0]].remove();
+        }
+    });
+
+    // Runs when region is updated (only allow one region)
+    wavesurfer2.on('region-updated', function(region) {
+        selected = 1;
+        highlightWS2();
         var regions = region.wavesurfer.regions.list;
         var keys = Object.keys(regions);
         if (keys.length > 1) {
@@ -317,6 +434,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Runs when player is clicked (used to clear regions)
     wavesurfer.drawer.on('click', function (e) {
+        selected = 0;
+        highlightWS1();
+
         // Clear dragged regions on click
         wavesurfer.clearRegions();
 
@@ -326,51 +446,19 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("current-time").innerText = formattedTime;
     });
 
-    /*
-    // Add listener for file drop
-    document.addEventListener("ondrop", function(event) {
-        console.log('File(s) dropped');
-      
-        // Prevent default behavior (Prevent file from being opened)
-        ev.preventDefault();
-      
-        if (ev.dataTransfer.items) {
-            // Use DataTransferItemList interface to access the file(s)
-            for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-                // If dropped items aren't files, reject them
-                if (ev.dataTransfer.items[i].kind === 'file') {
-                    var file = ev.dataTransfer.items[i].getAsFile();
-                    console.log('... file[' + i + '].name = ' + file.name);
-                }
-            }
-        } 
-        else {
-            // Use DataTransfer interface to access the file(s)
-            for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-                console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
-            }
-        }
-    });
+    // Runs when player is clicked (used to clear regions)
+    wavesurfer2.drawer.on('click', function (e) {
+        selected = 1;
+        highlightWS2();
 
-    // Add listener for file drop
-    document.addEventListener("drop", function(event) {
-        console.log('File(s) dropped');
-      
-        // Prevent default behavior (Prevent file from being opened)
-        event.preventDefault();
-      
-        if (event.dataTransfer.items) {
-            // Use DataTransferItemList interface to access the file(s)
-            
-        }
-    });
+        // Clear dragged regions on click
+        wavesurfer2.clearRegions();
 
-    // Add listener for file drop
-    document.addEventListener("dragover", function(event) {
-        // Prevent default behavior (Prevent file from being opened)
-        event.preventDefault();
+        // Display current time 
+        var seconds = wavesurfer2.getCurrentTime();
+        var formattedTime = secondsToTimestamp(seconds);
+        document.getElementById("current-time").innerText = formattedTime;
     });
-    */
 
      var mergeAudio = async function(files) {
         var master = undefined;
@@ -393,13 +481,25 @@ document.addEventListener("DOMContentLoaded", function() {
         return master;
     }
 
+    function highlightWS1() {
+        // Highlight wavesurfer1 using a blue glow
+        document.getElementById("ws-container2").classList.remove("selected");
+        document.getElementById("ws-container").classList.add("selected");
+    }
+
+    function highlightWS2() {
+        // Highlight wavesurfer2 using a blue glow
+        document.getElementById("ws-container").classList.remove("selected");
+        document.getElementById("ws-container2").classList.add("selected");
+    }
+
     // Create delete sound
-    function createDeleteAudio(start, end) {
+    function createDeleteAudio(start, end, selection) {
         var length = (end - start);
         var splices = length / 0.78;
-        var deleteSoundclip = deleteAudio;
+        var deleteSoundclip = deleteAudios[selection];
         for (var i = 0; i < Math.ceil(splices); i++) {
-            deleteSoundclip = concatenateAudioBuffers(deleteSoundclip, deleteAudio);
+            deleteSoundclip = concatenateAudioBuffers(deleteSoundclip, deleteAudios[selection]);
         }
         deleteSoundclip = slice(deleteSoundclip, 0, length);
         return deleteSoundclip;
