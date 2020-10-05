@@ -1,7 +1,6 @@
 flask
 flask_session
 gunicorn
-librosa
 numpy
 pydub
 matplotlib

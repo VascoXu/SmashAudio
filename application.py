@@ -5,7 +5,6 @@ from flask import Flask, flash, jsonify, request, redirect, session, render_temp
 from flask_session import Session
 from alignment import align
 from tempfile import mkdtemp
-import librosa
 import numpy as np
 import webbrowser
 from threading import Timer
