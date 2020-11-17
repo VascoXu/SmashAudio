@@ -62,7 +62,7 @@
                     <input type="file" class="form-control-file" id="choose-file" multiple>
                 </div>
 
-                <!-- Zoom and Download Button -->
+                <!-- Top Bar -->
                 <div class="text-right mb-3">
                     <div class="btn-group btn-group-toggle mr-4" data-toggle="buttons">
                         <label class="btn btn-light btn-smashlight active px-3">
@@ -80,12 +80,13 @@
 
                     <div class="btn-group mr-2" role="group" aria-label="Basic example">
                         <button id="cut" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-scissors" aria-hidden="true"></i><span class="ml-2">Cut</span></button>
+                        <button id="sync" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-refresh" aria-hidden="true"></i><span class="ml-2">Sync</span></button>
                         <button id="prev" type="button" class="btn btn-light btn-smashlight">Apply Edits</button>
                     </div>
             
                     <div class="btn-group " role="group" aria-label="Basic example">
-                        <button id="zoom-in" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-search-plus" aria-hidden="true"></i></button>
-                        <button id="zoom-out" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-search-minus" aria-hidden="true"></i></button>
+                        <!-- <button id="zoom-in" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-search-plus" aria-hidden="true"></i></button> -->
+                        <!-- <button id="zoom-out" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-search-minus" aria-hidden="true"></i></button> -->
                         <button id="download" type="button" class="btn btn-light btn-smashlight"><i class="fa fa-download" aria-hidden="true"></i><span class="ml-2">Download</span></button>                        
                     </div>
                 </div>
@@ -112,6 +113,23 @@
                     <button id="fast-backward" type="button" class="btn btn-dark"><i class="fa fa-fast-backward" aria-hidden="true"></i></button>
                     <button id="fast-forward" type="button" class="btn btn-dark"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
                 </div>
+
+                <!-- Zoom -->
+                <div class="d-flex justify-content-center no-height">
+                    <span><i class="fa fa-search-plus" aria-hidden="true"></i></span>
+                    <input class="mx-3" data-action="zoom" type="range" min="1" max="200" value="0" style="width: 200%" />
+                    <span><i class="fa fa-search-minus" aria-hidden="true"></i></span>
+                </div>
+                
+                <!-- <div class="btn-group" role="group" aria-label="Basic example">
+                    <span class="float-left"><i class="fa fa-search-plus" aria-hidden="true"></i></span>
+                </div>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <input data-action="zoom" type="range" min="1" max="200" value="0" style="width: 100%" />
+                </div>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <span class="float-left"><i class="fa fa-search-plus" aria-hidden="true"></i></span>
+                </div> -->
 
                 <!-- Time -->
                 <div class="btn-group" role="group" aria-label="Basic example">

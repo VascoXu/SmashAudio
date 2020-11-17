@@ -3,7 +3,7 @@ import os
 
 from flask import Flask, flash, jsonify, request, redirect, session, render_template, url_for, send_file
 from flask_session import Session
-from alignment import align
+from alignment import find_beep, sync_audio
 from tempfile import mkdtemp
 import numpy as np
 import webbrowser
@@ -43,12 +43,17 @@ def peaks():
     audio1 = request.files["audio1"]
     audio2 = request.files["audio2"]
     audio1.save("temp1.wav")
-    audio2.save("temp2.m4a")
+    audio2.save("temp2.wav")
 
     # Find sync point
-    sync_point = align("temp1.wav", "temp2.m4a")
-
-    return jsonify({'time': sync_point[0]})
+    sync_points = sync_audio("temp1.wav", "temp2.wav")
+    sync_point1 = sync_points['sync_point1'][0]
+    sync_length1 = sync_points['sync_point1'][1]
+    sync_point2 = sync_points['sync_point2'][0]
+    sync_length2 = sync_points['sync_point2'][1]
+    
+    return jsonify({'sync_point1': sync_point1, 'sync_length1': sync_length1,
+                    'sync_point2': sync_point2, 'sync_length2': sync_length2})
 
 
 @app.route('/api/replace',  methods=["POST"])
