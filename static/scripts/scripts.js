@@ -162,9 +162,23 @@ document.addEventListener("DOMContentLoaded", function() {
     // Sync audio
     document.getElementById("sync").addEventListener("click", function() {
         // Package the data
+        var buffer1 = wavesurfer.backend.buffer;
+        var buffer2 = wavesurfer2.backend.buffer;
         if (wavesurfer.backend.buffer && wavesurfer2.backend.buffer) {
-            const blob1 = bufferToWave(wavesurfer.backend.buffer, wavesurfer.backend.buffer.length);
-            const blob2 = bufferToWave(wavesurfer2.backend.buffer, wavesurfer2.backend.buffer.length);
+            // Look for beep within selected region
+            var regions = wavesurfers[selected].regions.list;
+            var keys = Object.keys(regions);
+            var start = 0;
+            var end = 0;
+            if (keys.length >= 1) {
+                start = regions[keys[0]].start;
+                end = regions[keys[0]].end;
+                buffer1 = slice(buffer1, start, end);
+                buffer2 = slice(buffer2, start, end);            
+            }
+        
+            const blob1 = bufferToWave(buffer1, buffer1.length);
+            const blob2 = bufferToWave(buffer2, buffer2.length);
             var fd = new FormData();
             fd.append("audio1", blob1);
             fd.append("audio2", blob2);
@@ -185,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Slice first buffer according to sync point
                 var buffer = wavesurfer.backend.buffer;
                 var duration = wavesurfer.backend.buffer.duration;
-                buffer = slice(buffer, sync_points['sync_point1'] + sync_points['sync_length1'], duration);
+                buffer = slice(buffer, sync_points['sync_point1'] + sync_points['sync_length1'] + start, duration);
     
                 history[0].push(buffer);
                 wavesurfer.loadDecodedBuffer(buffer);  
@@ -193,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Slice second buffer according to sync point
                 buffer = wavesurfer2.backend.buffer;
                 duration = wavesurfer2.backend.buffer.duration;
-                buffer = slice(buffer, sync_points['sync_point2'] + sync_points['sync_length2'], duration);
+                buffer = slice(buffer, sync_points['sync_point2'] + sync_points['sync_length2'] + start, duration);
                 
                 history[1].push(buffer);
                 wavesurfer2.loadDecodedBuffer(buffer);

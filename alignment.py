@@ -30,7 +30,7 @@ def detect_leading_silence(sound, silence_threshold=-30.0, chunk_size=5):
     return trim_ms
 
 
-def find_beep(audio):
+def find_beep(audio, start=0, end=0):
     """Find Beep by Mayank Goel"""
 
     fs_audio,y_audio = wavfile.read(audio)
